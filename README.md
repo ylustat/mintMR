@@ -20,4 +20,4 @@ Please refer to the ['mintMR' vignette](https://github.com/ylustat/mintMR/blob/m
 Development
 ===========
 
-This package is maintained by Yihao Lu (yihaolu@uchicago.com).
+This package is maintained by Yihao Lu (yihaolu@uchicago.edu).
