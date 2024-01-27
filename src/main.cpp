@@ -79,32 +79,6 @@ arma::mat do_call_cbind_vecs(List list_of_matrices) {
   return trans(combined_matrix); // need transpose
 }
 
-List default_opts(int L) {
-  arma::vec a_gamma = arma::zeros(L); // Equivalent to rep(0, L) in R
-  arma::vec b_gamma = arma::zeros(L);
-  arma::vec a_alpha = arma::zeros(L);
-  arma::vec b_alpha = arma::zeros(L);
-  arma::vec a_beta = arma::zeros(L);
-  arma::vec b_beta = arma::ones(L) * 0.01; // Equivalent to rep(b_beta_init, L)
-
-  double a = 0.1;
-  double b = 0.1;
-  int maxIter = 4000;
-  int thin = 10;
-  int burnin = 1000;
-
-  return List::create(Named("a_gamma") = a_gamma,
-                      Named("b_gamma") = b_gamma,
-                      Named("a_alpha") = a_alpha,
-                      Named("b_alpha") = b_alpha,
-                      Named("a_beta") = a_beta,
-                      Named("b_beta") = b_beta,
-                      Named("a") = a,
-                      Named("b") = b,
-                      Named("maxIter") = maxIter,
-                      Named("thin") = thin,
-                      Named("burnin") = burnin);
-}
 // [[Rcpp::export]]
 List get_opts(int L,
               Nullable<NumericVector> a_gamma = R_NilValue,
@@ -418,7 +392,6 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       );
       return res;
     }
-    // Rcpp::Rcout << "Gibbs Sampler iteration " << iter << " of " << (maxIter + burnin) << std::endl;
     for (ell = 0; ell < L; ell++) {
       vec invsgga2 = 1. / sgga2;
       vec invsgal2xi2 = 1. / sgal2xi2;
@@ -426,7 +399,6 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       // ----------------------- //
       // Parameters for Gamma
       // ----------------------- //
-      // cout << " -2 " << endl;
       mat v0t = inv(invsgal2xi2[ell] * as<mat>(I[ell]) + as<mat>(S_GinvRS_Ginv[ell]));
       mat mut1 = v0t * (diagmat(1 / as<vec>(sG2[ell])) * as<mat>(Gammah[ell]) +
         invsgal2xi2[ell] * (as<mat>(mu[ell]) * (as<mat>(Delta[ell]) % as<mat>(beta0[ell]))));
@@ -438,7 +410,6 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       // ----------------------- //
       // Parameters for gamma
       // ----------------------- //
-      // cout << " -1 " << endl;
       for (int k = 0; k < K; k++) {
         mat v1t;
         vec mut1;
@@ -462,7 +433,6 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       // ----------------------- //
       // Update Delta;
       // ----------------------- //
-      // cout << " 0 " << endl;
       double pr0, pr1, prob;
       mat m0_ell = as<mat>(mu[ell]);
       mat m1_ell = as<mat>(mu[ell]);
@@ -475,9 +445,7 @@ List mintMR_LD(const List &gammah, const List &Gammah,
           exp(-0.5 * (accu((as<mat>(mut[ell]) - m1)%(as<mat>(mut[ell]) - m1)) -
           accu((as<mat>(mut[ell]) - m0)%(as<mat>(mut[ell]) - m0))) / sgal2xi2[ell]);
 
-        // cout << pr0 << " - " << pr1 << endl;
         prob = pr0 / (pr0 + pr1);
-        // cout << prob << endl;
         vec Delta_ell = as<vec>(Delta[ell]);
         Delta_ell[k] = R::rbinom(1, prob);
         Delta[ell] = Delta_ell;
@@ -519,10 +487,6 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       double tbxi2 = 0.5*accu(err0)/sgal2[ell];
       xi2[ell] =  1 / randg<double>(distr_param(taxi2, 1/tbxi2));
       sgal2xi2[ell] = sgal2[ell]*xi2[ell];
-      // cout << sgal2xi2[ell] << endl;
-      // if(sgal2xi2[ell] < 1e-7){
-      //   sgal2xi2[ell] = 1e-7;
-      // }
       // ----------------------- //
       // Update sgga2
       // ----------------------- //
@@ -540,7 +504,6 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       // ----------------------- //
       // Update omega
       // ----------------------- //
-      // cout << " 6 " << endl;
       for (int k = 0; k < K; k++) {
         double at = as<mat>(a[ell])[k] + as<mat>(Delta[ell])[k];
         double bt = as<mat>(b[ell])[k] + (1 - as<mat>(Delta[ell])[k]);
@@ -570,7 +533,6 @@ List mintMR_LD(const List &gammah, const List &Gammah,
 
     mat alpha_all = do_call_rbind_vecs(omega);
     mat colmean_alpha = mean(alpha_all, 0);
-    // cout << colmean_alpha << endl;
 
     mat alpha_all1 = alpha_all.cols(as<uvec>(group[0]) - 1);
     mat alpha_all2 = alpha_all.cols(as<uvec>(group[1]) - 1);
@@ -951,7 +913,7 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
 
     mat alpha_all = do_call_rbind_vecs(omega);
     mat colmean_alpha = mean(alpha_all, 0);
-    // cout << colmean_alpha << endl;
+
 
     mat alpha_all1 = alpha_all.cols(as<uvec>(group[0]) - 1);
     mat alpha_all2 = alpha_all.cols(as<uvec>(group[1]) - 1);
