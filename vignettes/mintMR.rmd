@@ -36,7 +36,7 @@ library("ggplot2");
 ### Fit mintMR for correlated SNPs using simulated data
 In this section, we fit mintMR using simulated data (provided in the package).
 ```{r}
-load("/Users/yihaolu/Downloads/Research/mintMR/data/example_simulation_data.RData")
+data(example_data)
 L <- 50
 K1 <- K2 <- 5
 ```
@@ -47,13 +47,13 @@ group <- list(exposure1 = 1:K1, exposure2 = 1:K2+K1)
 In addition, mintMR takes IV-to-exposure effect (a list of $I_g\times \sum K_l$ matrices with length $L$), IV-to-outcome effect and corresponding standard errors. The LD matrices (`corr_mat`) and sample overlap (`Lambda`) are optional.
 
 Default prior parameters used in the algorithm is
-```{r R.options=list(max.print=2)}
+```{r}
 opts <- get_opts(L)
 names(opts)
 ```
 It can be changed by specifying the parameters you want to use. For example:
 ```{r}
-opts <- get_opts(L, b_beta = rep(0.007,L))
+opts <- get_opts(L, maxIter = 1000)
 ```
 
 MintMR can be run without specifying LD or sample overlap using following command.
@@ -101,7 +101,7 @@ names(res)
 The p-value distribution for all gene-tissue pairs analyzed can be visualized as below.
 ```{r}
 p <- data.frame(mintMR = as.vector(res$Pvalue))
-qqplot <- p %>% 
+p %>% 
   arrange(mintMR) %>% 
   mutate(unif = ppoints(n())) %>%
   mutate(value = -log10(mintMR), unif = -log10(unif)) %>%
@@ -111,19 +111,17 @@ qqplot <- p %>%
   theme_classic()+
   labs(y = expression(paste("Observed -log"[10], plain(P))),
        x = expression(paste("Expected -log"[10], plain(P))))
-qqplot
 ```
 The p-value distribution for truly non-zero effects:
 ```{r}
 p <- data.frame(mintMR = res$Pvalue[dat$latent_status == 1])
-fig <- p %>% 
+p %>% 
   ggplot(aes(x = mintMR))+
   geom_histogram(col="black", boundary = 0, bins=20)+
   theme_classic()+
   scale_x_continuous(limits = c(NA,1))+
   labs(x = "P-value", y = "# gene-tissue pairs", 
        title = "P-value for truly non-zero effect")
-fig
 ```
 
 The effect estimate for null effects:
