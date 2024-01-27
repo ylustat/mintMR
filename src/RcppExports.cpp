@@ -11,19 +11,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// normal_pdf
-double normal_pdf(double x, double m, double s);
-RcppExport SEXP _mintMR_normal_pdf(SEXP xSEXP, SEXP mSEXP, SEXP sSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type x(xSEXP);
-    Rcpp::traits::input_parameter< double >::type m(mSEXP);
-    Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    rcpp_result_gen = Rcpp::wrap(normal_pdf(x, m, s));
-    return rcpp_result_gen;
-END_RCPP
-}
 // get_opts
 List get_opts(int L, Nullable<NumericVector> a_gamma, Nullable<NumericVector> b_gamma, Nullable<NumericVector> a_alpha, Nullable<NumericVector> b_alpha, Nullable<NumericVector> a_beta, Nullable<NumericVector> b_beta, Nullable<double> a, Nullable<double> b, Nullable<int> maxIter, Nullable<int> thin, Nullable<int> burnin);
 RcppExport SEXP _mintMR_get_opts(SEXP LSEXP, SEXP a_gammaSEXP, SEXP b_gammaSEXP, SEXP a_alphaSEXP, SEXP b_alphaSEXP, SEXP a_betaSEXP, SEXP b_betaSEXP, SEXP aSEXP, SEXP bSEXP, SEXP maxIterSEXP, SEXP thinSEXP, SEXP burninSEXP) {
@@ -43,18 +30,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Nullable<int> >::type thin(thinSEXP);
     Rcpp::traits::input_parameter< Nullable<int> >::type burnin(burninSEXP);
     rcpp_result_gen = Rcpp::wrap(get_opts(L, a_gamma, b_gamma, a_alpha, b_alpha, a_beta, b_beta, a, b, maxIter, thin, burnin));
-    return rcpp_result_gen;
-END_RCPP
-}
-// fastSigLm
-List fastSigLm(const arma::vec& y, const arma::mat& X);
-RcppExport SEXP _mintMR_fastSigLm(SEXP ySEXP, SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(fastSigLm(y, X));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -125,9 +100,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_mintMR_normal_pdf", (DL_FUNC) &_mintMR_normal_pdf, 3},
     {"_mintMR_get_opts", (DL_FUNC) &_mintMR_get_opts, 12},
-    {"_mintMR_fastSigLm", (DL_FUNC) &_mintMR_fastSigLm, 2},
     {"_mintMR_mintMR_LD", (DL_FUNC) &_mintMR_mintMR_LD, 11},
     {"_mintMR_mintMR_LD_Sample_Overlap", (DL_FUNC) &_mintMR_mintMR_LD_Sample_Overlap, 12},
     {"_mintMR_mintMR", (DL_FUNC) &_mintMR_mintMR, 12},

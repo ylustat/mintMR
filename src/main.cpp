@@ -149,10 +149,10 @@ List summarize_result(const List& res) {
   int K = as<mat>(as<List>(as<List>(beta0res)[0])[0]).n_rows;
 
   // Initialize matrices to store results
-  mat beta_mint = mat(L, K, fill::zeros);
-  mat omega_mint = mat(L, K, fill::zeros);
-  mat delta_mint = mat(L, K, fill::zeros);
-  mat pval_mint = mat(L, K, fill::zeros);
+  mat Estimate = mat(L, K, fill::zeros);
+  mat Prob = mat(L, K, fill::zeros);
+  mat Status = mat(L, K, fill::zeros);
+  mat Pvalue = mat(L, K, fill::zeros);
 
   for (int s = 0; s < L; s++) {
     mat beta_est = do_call_rbind_vecs(as<List>(beta0res[s]));
@@ -165,7 +165,7 @@ List summarize_result(const List& res) {
       rowvec beta_est_sd = stddev(beta_est.cols(all_zero), 0, 0) / sqrt(beta_est.n_rows);
       vec pvals = 2 * (1 - normcdf(abs(beta_est_mean / beta_est_sd)).t());
       for (uword i = 0; i < all_zero.n_elem; ++i) {
-        pval_mint(s, all_zero(i)) = pvals(i);
+        Pvalue(s, all_zero(i)) = pvals(i);
       }
     }
 
@@ -176,17 +176,15 @@ List summarize_result(const List& res) {
       rowvec beta_est_sd = sd_ignore_nan_inf(beta_est.cols(nonzero)).t();
       vec pvals = 2 * (1 - normcdf(abs(beta_est_mean / beta_est_sd)).t());
       for (uword i = 0; i < nonzero.n_elem; ++i) {
-        pval_mint(s, nonzero(i)) = pvals(i);
+        Pvalue(s, nonzero(i)) = pvals(i);
       }
     }
-    beta_mint.row(s) = mean_ignore_nan_inf(beta_est).t();
-    omega_mint.row(s) = mean(omega_est, 0);
-    delta_mint.row(s) = mean(Delta_est, 0);
+    Estimate.row(s) = mean_ignore_nan_inf(beta_est).t();
+    // Prob.row(s) = mean(omega_est, 0);
+    // Status.row(s) = mean(Delta_est, 0);
   }
-  return List::create(Named("beta_mint") = beta_mint,
-                      Named("omega_mint") = omega_mint,
-                      Named("delta_mint") = delta_mint,
-                      Named("pval_mint") = pval_mint);
+  return List::create(Named("Estimate") = Estimate,
+                      Named("Pvalue") = Pvalue);
 }
 
 Environment pkg = Environment::namespace_env("CCA");
