@@ -40,7 +40,7 @@ data(example_data)
 L <- 50
 K1 <- K2 <- 5
 ```
-The simulated data has 2 exposures, each with five contexts. It has 50 gene-CpG pairs. True effect status (0 indicates no effect, 1 indicates true non-zero effect). The mintMR requires the information for what contexts included for each exposure (the 'group' variable). 
+The simulated data has 2 exposures, each with five contexts. It has 50 gene-CpG pairs. True effect status is a binary matrix where 0 indicates no effect and 1 indicates true non-zero effect. The mintMR requires the information for what contexts included for each exposure (the 'group' variable). 
 ```{r}
 group <- list(exposure1 = 1:K1, exposure2 = 1:K2+K1)
 ```
