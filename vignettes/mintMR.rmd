@@ -70,26 +70,27 @@ res <- mintMR(gammah = dat$gamma_hat,
 When the LD information is available and formatted as a list of matrices, it can be accounted for:
 ```{r}
 res_LD <- mintMR(gammah = dat$gamma_hat,
-              Gammah = dat$Gamma_hat,
-              se1 = dat$se_g,
-              se2 = dat$se_G,
-              corr_mat = dat$LD, 
-              group = group)
+                 Gammah = dat$Gamma_hat,
+                 se1 = dat$se_g,
+                 se2 = dat$se_G,
+                 corr_mat = dat$LD, 
+                 group = group)
 ```
 When sample overlap information $\widehat{C}$ is available as a $(1+\sum_lK_l)\times(1+\sum_lK_l)$ matrix, it can be used in the function as
 ```{r}
 # Example correlation matrix for sample overlap. In real data, it can be pre-estimated.
-C <- 0.9 * diag(1,(1+K1+K2)) + 0.1 * matrix(1,nrow=1+K1+K2,ncol=1+K1+K2)
+C <- 0.9 * diag(1,(1+K1+K2)) + 
+  0.1 * matrix(1,nrow=1+K1+K2,ncol=1+K1+K2)
 
 Lambda <- solve(C)
 
 res_LD_sample_overlap <- mintMR(gammah = dat$gamma_hat,
-              Gammah = dat$Gamma_hat,
-              se1 = dat$se_g,
-              se2 = dat$se_G,
-              corr_mat = dat$LD, 
-              Lambda = Lambda,
-              group = group)
+                                Gammah = dat$Gamma_hat,
+                                se1 = dat$se_g,
+                                se2 = dat$se_G,
+                                corr_mat = dat$LD, 
+                                Lambda = Lambda,
+                                group = group)
 ```
 
 
