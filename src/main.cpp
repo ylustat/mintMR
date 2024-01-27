@@ -17,25 +17,6 @@ using namespace std;
 #include <progress.hpp>
 #include <progress_bar.hpp>
 
-//[[Rcpp::export]]
-double normal_pdf(double x, double m, double s){
-  static const double inv_sqrt_2pi = 0.3989422804014327;
-  double a = (x - m) / s;
-
-  return inv_sqrt_2pi / s * std::exp(-0.5f * a * a);
-}
-
-arma::mat upTruncateMatrix(arma::mat x) {
-  double threshold = 6.9;
-  x.elem(find(x > threshold)).fill(threshold);
-  return x;
-}
-
-arma::mat lowTruncateMatrix(arma::mat x) {
-  double threshold = -9.21;
-  x.elem(find(x < threshold)).fill(threshold);
-  return x;
-}
 
 arma::mat normalize_mat(arma::mat X) {
   int p = X.n_cols;
@@ -79,6 +60,18 @@ arma::mat do_call_cbind_vecs(List list_of_matrices) {
   return trans(combined_matrix); // need transpose
 }
 
+arma::mat up_truncate_matrix(arma::mat x) {
+  double threshold = 6.9;
+  x.elem(find(x > threshold)).fill(threshold);
+  return x;
+}
+
+arma::mat low_truncate_matrix(arma::mat x) {
+  double threshold = -9.21;
+  x.elem(find(x < threshold)).fill(threshold);
+  return x;
+}
+
 // [[Rcpp::export]]
 List get_opts(int L,
               Nullable<NumericVector> a_gamma = R_NilValue,
@@ -120,45 +113,6 @@ List get_opts(int L,
 }
 
 // [[Rcpp::depends(RcppArmadillo)]]
-void fastLm(const arma::vec & y, const arma::mat & X, double &coefb, double &stdb) {
-
-  int n = X.n_rows, k = X.n_cols;
-
-  arma::colvec coef = arma::solve(X, y);
-  arma::colvec resid = y - X*coef;
-
-  double sig2 = arma::as_scalar(arma::trans(resid)*resid/(n-k));
-  arma::colvec stderrest =
-    arma::sqrt(sig2 * arma::diagvec( arma::inv(arma::trans(X)*X)) );
-
-  coefb = coef[1];
-  stdb = stderrest[1];
-}
-
-
-// [[Rcpp::export]]
-List fastSigLm(const arma::vec & y, const arma::mat & X) {
-
-  // int n = X.n_rows, k = X.n_cols;
-  int p = X.n_cols;int n = X.n_rows;
-  arma::mat xx = zeros(p, 2);
-  double coefb = 0;
-  double stdb = 0;
-  vec coef = zeros(p, 1);
-  vec std = zeros(p, 1);
-
-  for( int j = 0; j < p; j = j + 1 )
-  {
-    xx = join_rows(ones(n, 1), X.col(j));
-    fastLm(y, xx, coefb, stdb);
-    coef[j] = coefb;
-    std[j] = stdb;
-  }
-
-  return List::create(Named("coef") = coef,
-                      Named("std") = std);
-}
-
 vec mean_ignore_nan_inf(const mat& X) {
   vec col_mean = zeros<vec>(X.n_cols);
   for (unsigned int j = 0; j < X.n_cols; ++j) {
@@ -235,9 +189,6 @@ List summarize_result(const List& res) {
                       Named("pval_mint") = pval_mint);
 }
 
-
-// Environment global_env = Environment::global_env();
-// Function cc = global_env["cc"];
 Environment pkg = Environment::namespace_env("CCA");
 Function cc = pkg["cc"];
 
@@ -540,10 +491,10 @@ List mintMR_LD(const List &gammah, const List &Gammah,
     mat U1 = log(alpha_all1 / (1 - alpha_all1)) - u0;
     mat U2 = log(alpha_all2 / (1 - alpha_all2)) - u0;
 
-    U1 = upTruncateMatrix(U1);
-    U2 = upTruncateMatrix(U2);
-    U1 = lowTruncateMatrix(U1);
-    U2 = lowTruncateMatrix(U2);
+    U1 = up_truncate_matrix(U1);
+    U2 = up_truncate_matrix(U2);
+    U1 = low_truncate_matrix(U1);
+    U2 = low_truncate_matrix(U2);
 
     mat norm_U1c = normalize_mat(U1);
     mat norm_U2c = normalize_mat(U2);
@@ -921,10 +872,10 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
     mat U1 = log(alpha_all1 / (1 - alpha_all1)) - u0;
     mat U2 = log(alpha_all2 / (1 - alpha_all2)) - u0;
 
-    U1 = upTruncateMatrix(U1);
-    U2 = upTruncateMatrix(U2);
-    U1 = lowTruncateMatrix(U1);
-    U2 = lowTruncateMatrix(U2);
+    U1 = up_truncate_matrix(U1);
+    U2 = up_truncate_matrix(U2);
+    U1 = low_truncate_matrix(U1);
+    U2 = low_truncate_matrix(U2);
 
     mat norm_U1c = normalize_mat(U1);
     mat norm_U2c = normalize_mat(U2);
