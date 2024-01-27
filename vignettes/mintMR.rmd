@@ -133,7 +133,7 @@ estimate[example_data$latent_status == 1] <- NA
 
 estimate %>%
   reshape2::melt() %>%
-  drop_na() %>%
+  tidyr::drop_na() %>%
   ggplot(aes(y = value))+
   theme_bw()+
   geom_boxplot(width=0.2)+
