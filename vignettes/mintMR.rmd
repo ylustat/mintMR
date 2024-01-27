@@ -1,5 +1,5 @@
 ---
-title: Integrative multi-context Mendelian randomization method for identifying risk genes across human tissues
+title: An integrative multi-context Mendelian randomization method for identifying risk genes across human tissues
 author: "Yihao Lu, Ke Xu, Fan Yang and Lin S. Chen"
 output:
   pdf_document: default

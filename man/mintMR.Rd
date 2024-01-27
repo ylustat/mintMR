@@ -1,8 +1,8 @@
 \name{mintMR}
 \alias{mintMR}
-\title{Integrative multi-context Mendelian randomization method for identifying risk genes across human tissues}
+\title{An integrative multi-context Mendelian randomization method for identifying risk genes across human tissues}
 \description{
-  Implements a Gibbs sampling algorithm for the mintMR method. The function is designed to map gene expression and molecular traits as risk exposures across multiple contexts/tissues.
+  Implementation of a Gibbs sampling algorithm for the mintMR method. The function is designed to map gene expression and molecular traits as risk exposures across multiple contexts/tissues.
 }
 \usage{
 mintMR(gammah, Gammah, se1, se2, group, opts = NULL, corr_mat = NULL, Lambda = NULL, CC = 2, PC1 = 1, PC2 = 1, display_progress = TRUE)
