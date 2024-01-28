@@ -5,14 +5,6 @@ get_opts <- function(L, a_gamma = NULL, b_gamma = NULL, a_alpha = NULL, b_alpha 
     .Call(`_mintMR_get_opts`, L, a_gamma, b_gamma, a_alpha, b_alpha, a_beta, b_beta, a, b, maxIter, thin, burnin)
 }
 
-mintMR_LD <- function(gammah, Gammah, se1, se2, corr_mat, group, opts, display_progress = TRUE, CC = 2L, PC1 = 1L, PC2 = 1L) {
-    .Call(`_mintMR_mintMR_LD`, gammah, Gammah, se1, se2, corr_mat, group, opts, display_progress, CC, PC1, PC2)
-}
-
-mintMR_LD_Sample_Overlap <- function(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress = TRUE, CC = 2L, PC1 = 1L, PC2 = 1L) {
-    .Call(`_mintMR_mintMR_LD_Sample_Overlap`, gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, CC, PC1, PC2)
-}
-
 mintMR <- function(gammah, Gammah, se1, se2, group, opts = NULL, corr_mat = NULL, Lambda = NULL, CC = 2L, PC1 = 1L, PC2 = 1L, display_progress = TRUE) {
     .Call(`_mintMR_mintMR`, gammah, Gammah, se1, se2, group, opts, corr_mat, Lambda, CC, PC1, PC2, display_progress)
 }

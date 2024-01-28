@@ -33,49 +33,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// mintMR_LD
-List mintMR_LD(const List& gammah, const List& Gammah, const List& se1, const List& se2, const List corr_mat, const List group, const List& opts, bool display_progress, int CC, int PC1, int PC2);
-RcppExport SEXP _mintMR_mintMR_LD(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP corr_matSEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP display_progressSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const List& >::type gammah(gammahSEXP);
-    Rcpp::traits::input_parameter< const List& >::type Gammah(GammahSEXP);
-    Rcpp::traits::input_parameter< const List& >::type se1(se1SEXP);
-    Rcpp::traits::input_parameter< const List& >::type se2(se2SEXP);
-    Rcpp::traits::input_parameter< const List >::type corr_mat(corr_matSEXP);
-    Rcpp::traits::input_parameter< const List >::type group(groupSEXP);
-    Rcpp::traits::input_parameter< const List& >::type opts(optsSEXP);
-    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    Rcpp::traits::input_parameter< int >::type CC(CCSEXP);
-    Rcpp::traits::input_parameter< int >::type PC1(PC1SEXP);
-    Rcpp::traits::input_parameter< int >::type PC2(PC2SEXP);
-    rcpp_result_gen = Rcpp::wrap(mintMR_LD(gammah, Gammah, se1, se2, corr_mat, group, opts, display_progress, CC, PC1, PC2));
-    return rcpp_result_gen;
-END_RCPP
-}
-// mintMR_LD_Sample_Overlap
-List mintMR_LD_Sample_Overlap(const List& gammah, const List& Gammah, const List& se1, const List& se2, const List corr_mat, const List group, const List& opts, const arma::mat& Lambda, bool display_progress, int CC, int PC1, int PC2);
-RcppExport SEXP _mintMR_mintMR_LD_Sample_Overlap(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP corr_matSEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP LambdaSEXP, SEXP display_progressSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const List& >::type gammah(gammahSEXP);
-    Rcpp::traits::input_parameter< const List& >::type Gammah(GammahSEXP);
-    Rcpp::traits::input_parameter< const List& >::type se1(se1SEXP);
-    Rcpp::traits::input_parameter< const List& >::type se2(se2SEXP);
-    Rcpp::traits::input_parameter< const List >::type corr_mat(corr_matSEXP);
-    Rcpp::traits::input_parameter< const List >::type group(groupSEXP);
-    Rcpp::traits::input_parameter< const List& >::type opts(optsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type Lambda(LambdaSEXP);
-    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    Rcpp::traits::input_parameter< int >::type CC(CCSEXP);
-    Rcpp::traits::input_parameter< int >::type PC1(PC1SEXP);
-    Rcpp::traits::input_parameter< int >::type PC2(PC2SEXP);
-    rcpp_result_gen = Rcpp::wrap(mintMR_LD_Sample_Overlap(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, CC, PC1, PC2));
-    return rcpp_result_gen;
-END_RCPP
-}
 // mintMR
 List mintMR(const List& gammah, const List& Gammah, const List& se1, const List& se2, const List group, Nullable<List> opts, Nullable<List> corr_mat, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, bool display_progress);
 RcppExport SEXP _mintMR_mintMR(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP corr_matSEXP, SEXP LambdaSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP display_progressSEXP) {
@@ -101,8 +58,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mintMR_get_opts", (DL_FUNC) &_mintMR_get_opts, 12},
-    {"_mintMR_mintMR_LD", (DL_FUNC) &_mintMR_mintMR_LD, 11},
-    {"_mintMR_mintMR_LD_Sample_Overlap", (DL_FUNC) &_mintMR_mintMR_LD_Sample_Overlap, 12},
     {"_mintMR_mintMR", (DL_FUNC) &_mintMR_mintMR, 12},
     {NULL, NULL, 0}
 };

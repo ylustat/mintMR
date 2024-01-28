@@ -190,8 +190,6 @@ List summarize_result(const List& res) {
 Environment pkg = Environment::namespace_env("CCA");
 Function cc = pkg["cc"];
 
-
-// [[Rcpp::export]]
 List mintMR_LD(const List &gammah, const List &Gammah,
                const List &se1, const List &se2,
                const List corr_mat, const List group, const List &opts,
@@ -572,7 +570,6 @@ List mintMR_LD(const List &gammah, const List &Gammah,
   return res;
 }
 
-// [[Rcpp::export]]
 List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
                               const List &se1, const List &se2,
                               const List corr_mat, const List group, const List &opts,
