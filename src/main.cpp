@@ -86,7 +86,7 @@ List get_opts(int L,
               Nullable<int> thin = R_NilValue,
               Nullable<int> burnin = R_NilValue) {
 
-  NumericVector a_gamma_vec = a_gamma.isNotNull() ? as<NumericVector>(a_gamma) : NumericVector(L, 0.0);
+  NumericVector a_gamma_vec = a_gamma.isNotNull() ? as<NumericVector>(a_gamma) : NumericVector(L, 1.0);
   NumericVector b_gamma_vec = b_gamma.isNotNull() ? as<NumericVector>(b_gamma) : NumericVector(L, 0.0);
   NumericVector a_alpha_vec = a_alpha.isNotNull() ? as<NumericVector>(a_alpha) : NumericVector(L, 0.0);
   NumericVector b_alpha_vec = b_alpha.isNotNull() ? as<NumericVector>(b_alpha) : NumericVector(L, 0.0);
@@ -220,7 +220,7 @@ List mintMR_LD(const List &gammah, const List &Gammah,
   int thin = as<int>(opts["thin"]);
   int burnin = as<int>(opts["burnin"]) - 1;
 
-  vec sgga2 = vec(L, fill::ones) * 0.01;
+  // vec sgga2 = vec(L, fill::ones) * 0.01;
   vec sgal2 = vec(L, fill::ones) * 0.01;
   vec sgbeta2 = vec(L, fill::ones) * 0.01;
   vec xi2 = vec(L, fill::ones) * 0.01;
@@ -234,13 +234,13 @@ List mintMR_LD(const List &gammah, const List &Gammah,
   }
   double u0 = 0.1;
   int numsave = maxIter / thin + 1;
-  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L);
+  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L), sgga2(L);
   List m0save(L), m1save(L);
   for (int i = 0; i < L; i++) {
     Delta[i] = vec(K, fill::zeros);
     mut[i] = vec(p[i], fill::ones) * 0.01;
     mu[i] = mat(p[i], K, fill::ones) * 0.01;
-
+    sgga2[i] = vec(K, fill::ones) * 0.01;
     m0save[i] = mat(p[i], K, fill::ones) * 0.01;
     m1save[i] = mat(p[i], K, fill::ones) * 0.01;
   }
@@ -259,7 +259,7 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       as<List>(beta0res[ell])[l] = vec(K, fill::ones);
       as<List>(omegaRes[ell])[l] = vec(K, fill::ones);
       as<List>(DeltaRes[ell])[l] = vec(K, fill::ones);
-      as<List>(Sgga2Res[ell])[l] = 1;
+      as<List>(Sgga2Res[ell])[l] = vec(K, fill::ones);
       as<List>(Sgal2Res[ell])[l] = 1;
       as<List>(Sgbeta2Res[ell])[l] = 1;
     }
@@ -340,7 +340,7 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       return res;
     }
     for (ell = 0; ell < L; ell++) {
-      vec invsgga2 = 1. / sgga2;
+      vec invsgga2 = 1. / as<vec>(sgga2[ell]);
       vec invsgal2xi2 = 1. / sgal2xi2;
 
       // ----------------------- //
@@ -361,14 +361,14 @@ List mintMR_LD(const List &gammah, const List &Gammah,
         mat v1t;
         vec mut1;
         if (as<double>(as<List>(Delta[ell])[k]) == 1) {
-          v1t = inv(invsgga2[ell] * as<mat>(I[ell]) + as<mat>(as<List>(S_ginvRS_ginv[ell])[k]) + as<mat>(beta0[ell])[k] * as<mat>(beta0[ell])[k] * invsgal2xi2[ell] * as<mat>(I[ell]));
+          v1t = inv(invsgga2[k] * as<mat>(I[ell]) + as<mat>(as<List>(S_ginvRS_ginv[ell])[k]) + as<mat>(beta0[ell])[k] * as<mat>(beta0[ell])[k] * invsgal2xi2[ell] * as<mat>(I[ell]));
           mut1 = v1t * (as<mat>(beta0[ell])[k] * invsgal2xi2[ell] * (as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * (as<mat>(Delta[ell]) % as<mat>(beta0[ell])), 1) + as<mat>(beta0[ell])[k] * as<mat>(mu[ell]).col(k)) + as<mat>(invsg2[ell]).col(k) % as<mat>(gammah[ell]).col(k));
 
           mat mu_ell = as<mat>(mu[ell]);
           mu_ell.col(k) = mvnrnd(mut1, v1t);
           mu[ell] = mu_ell;
         } else {
-          v1t = inv(invsgga2[ell] * as<mat>(I[ell]) + as<mat>(as<List>(S_ginvRS_ginv[ell])[k]));
+          v1t = inv(invsgga2[k] * as<mat>(I[ell]) + as<mat>(as<List>(S_ginvRS_ginv[ell])[k]));
           mut1 = v1t * (as<mat>(invsg2[ell]).col(k) % as<mat>(gammah[ell]).col(k));
 
           mat mu_ell = as<mat>(mu[ell]);
@@ -437,10 +437,25 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       // ----------------------- //
       // Update sgga2
       // ----------------------- //
-      double ta_gamma = a_gamma[ell] + K * p[ell] / 2;
-      double tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell])%as<mat>(mu[ell]))/2;
-      sgga2[ell] = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
-
+      double ta_gamma;
+      double tb_gamma;
+      int K1 = as<uvec>(group[0]).n_elem;
+      ta_gamma = a_gamma[ell] + K1 * p[ell] / 2;
+      tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell]).cols(as<uvec>(group[0]) - 1)%as<mat>(mu[ell]).cols(as<uvec>(group[0]) - 1))/2;
+      double sgga2_grp1 = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
+      int K2 = as<uvec>(group[1]).n_elem;
+      ta_gamma = a_gamma[ell] + K2 * p[ell] / 2;
+      tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell]).cols(as<uvec>(group[1]) - 1)%as<mat>(mu[ell]).cols(as<uvec>(group[1]) - 1))/2;
+      double sgga2_grp2 = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
+      vec sgga2_ell = as<vec>(sgga2[ell]);
+      for (int k = 0; k < K1; k++) {
+        sgga2_ell[k] = sgga2_grp1;
+      }
+      for (int k = 0; k < K2; k++) {
+        sgga2_ell[k+K1] = sgga2_grp2;
+      }
+      sgga2[ell] = sgga2_ell;
+      
       // ----------------------- //
       // Update sgbeta2
       // ----------------------- //
@@ -613,7 +628,7 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
   int burnin = as<int>(opts["burnin"]) - 1;
 
 
-  vec sgga2 = vec(L, fill::ones) * 0.01;
+  // vec sgga2 = vec(L, fill::ones) * 0.01;
   vec sgal2 = vec(L, fill::ones) * 0.01;
   vec sgbeta2 = vec(L, fill::ones) * 0.01;
   vec xi2 = vec(L, fill::ones) * 0.01;
@@ -626,13 +641,14 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
   }
 
   int numsave = maxIter / thin + 1;
-  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L);
+  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L), sgga2(L);
   List m0save(L), m1save(L);
   for (int i = 0; i < L; i++) {
     Delta[i] = vec(K, fill::zeros);
     mut[i] = vec(p[i], fill::ones) * 0.01;
     mu[i] = mat(p[i], K, fill::ones) * 0.01;
 
+    sgga2[i] = vec(p[i], fill::ones) * 0.01;
     m0save[i] = mat(p[i], K, fill::ones) * 0.01;
     m1save[i] = mat(p[i], K, fill::ones) * 0.01;
   }
@@ -652,7 +668,7 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
       as<List>(beta0res[ell])[l] = vec(K, fill::ones);
       as<List>(omegaRes[ell])[l] = vec(K, fill::ones);
       as<List>(DeltaRes[ell])[l] = vec(K, fill::ones);
-      as<List>(Sgga2Res[ell])[l] = 1;
+      as<List>(Sgga2Res[ell])[l] = vec(K, fill::ones);
       as<List>(Sgal2Res[ell])[l] = 1;
       as<List>(Sgbeta2Res[ell])[l] = 1;
     }
@@ -690,7 +706,7 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
     }
 
     for (ell = 0; ell < L; ell++) {
-      vec invsgga2 = 1. / sgga2;
+      vec invsgga2 = 1. / as<vec>(sgga2[ell]);
       vec invsgal2xi2 = 1. / sgal2xi2;
 
       // ----------------------- //
@@ -720,7 +736,7 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
         mat v1t;
         vec mut1;
         if (as<double>(as<List>(Delta[ell])[k]) == 1) {
-          v1t = inv(invsgga2[ell] * as<mat>(I[ell]) + Lambda(0,0) * diagmat(as<mat>(invsg2[ell]).col(k)) + as<double>(as<List>(Delta[ell])[k]) * as<mat>(beta0[ell])[k] * as<mat>(beta0[ell])[k] * invsgal2xi2[ell] * as<mat>(I[ell]));
+          v1t = inv(invsgga2[k] * as<mat>(I[ell]) + Lambda(0,0) * diagmat(as<mat>(invsg2[ell]).col(k)) + as<double>(as<List>(Delta[ell])[k]) * as<mat>(beta0[ell])[k] * as<mat>(beta0[ell])[k] * invsgal2xi2[ell] * as<mat>(I[ell]));
           mut1 =
             as<double>(as<List>(Delta[ell])[k]) * as<mat>(beta0[ell])[k] * invsgal2xi2[ell] * (as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * (as<mat>(Delta[ell]) % as<mat>(beta0[ell])), 1) + as<mat>(beta0[ell])[k] * as<mat>(mu[ell]).col(k)) +
             Lambda(k+1,k+1) * as<mat>(invsg2[ell]).col(k) % as<mat>(gammah[ell]).col(k)-
@@ -736,7 +752,7 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
           mu_ell.col(k) = mvnrnd(mut1, v1t);
           mu[ell] = mu_ell;
         } else {
-          v1t = inv(invsgga2[ell] * as<mat>(I[ell]) + Lambda(0,0) * diagmat(as<mat>(invsg2[ell]).col(k)));
+          v1t = inv(invsgga2[k] * as<mat>(I[ell]) + Lambda(0,0) * diagmat(as<mat>(invsg2[ell]).col(k)));
           mut1 = Lambda(k+1,k+1) * as<mat>(invsg2[ell]).col(k) % as<mat>(gammah[ell]).col(k);
           mut1 =
             Lambda(k+1,k+1) * as<mat>(invsg2[ell]).col(k) % as<mat>(gammah[ell]).col(k)-
@@ -821,10 +837,24 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
       // ----------------------- //
       // Update sgga2
       // ----------------------- //
-      double ta_gamma = a_gamma[ell] + K * p[ell] / 2;
-      double tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell])%as<mat>(mu[ell]))/2;
-      sgga2[ell] = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
-
+      double ta_gamma;
+      double tb_gamma;
+      int K1 = as<uvec>(group[0]).n_elem;
+      ta_gamma = a_gamma[ell] + K1 * p[ell] / 2;
+      tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell]).cols(as<uvec>(group[0]) - 1)%as<mat>(mu[ell]).cols(as<uvec>(group[0]) - 1))/2;
+      double sgga2_grp1 = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
+      int K2 = as<uvec>(group[1]).n_elem;
+      ta_gamma = a_gamma[ell] + K2 * p[ell] / 2;
+      tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell]).cols(as<uvec>(group[1]) - 1)%as<mat>(mu[ell]).cols(as<uvec>(group[1]) - 1))/2;
+      double sgga2_grp2 = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
+      vec sgga2_ell = as<vec>(sgga2[ell]);
+      for (int k = 0; k < K1; k++) {
+        sgga2_ell[k] = sgga2_grp1;
+      }
+      for (int k = 0; k < K2; k++) {
+        sgga2_ell[k+K1] = sgga2_grp2;
+      }
+      sgga2[ell] = sgga2_ell;
 
       // ----------------------- //
       // Update sgbeta2
