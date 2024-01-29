@@ -28,3 +28,17 @@ mintMR(gammah, Gammah, se1, se2, group, opts = NULL, corr_mat = NULL, Lambda = N
     \item \code{Pvalue}: A matrix of p-values associated with the estimated effects.
   }
 }
+\examples{
+data(example_data)
+L <- 50
+K1 <- K2 <- 5
+group <- list(exposure1 = 1:K1, exposure2 = 1:K2+K1)
+set.seed(123)
+res <- mintMR(gammah = example_data$gamma_hat,
+              Gammah = example_data$Gamma_hat,
+              se1 = example_data$se_g,
+              se2 = example_data$se_G,
+              corr_mat = example_data$LD, 
+              group = group)
+names(res)
+}
