@@ -833,7 +833,6 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
       xi2[ell] =  1 / randg<double>(distr_param(taxi2, 1/tbxi2));
       sgal2xi2[ell] = sgal2[ell]*xi2[ell];
 
-
       // ----------------------- //
       // Update sgga2
       // ----------------------- //
@@ -861,7 +860,7 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
       // ----------------------- //
       double ta_beta = a_beta[ell] + K / 2;
       double tb_beta = b_beta[ell] + accu(as<mat>(beta0[ell])%as<mat>(beta0[ell]))/2;
-      // sgbeta2[ell] = tb_beta/ta_beta;
+      // sgbeta2[ell] = tb_beta/(ta_beta - 1);
       sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
       
       // ----------------------- //

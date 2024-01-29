@@ -137,7 +137,7 @@ estimate %>%
   ggplot(aes(y = value))+
   theme_bw()+
   geom_boxplot(width=0.2)+
-  geom_hline(yintercept = 0,col="red",linetype="dashed")
+  geom_hline(yintercept = 0,col="red",linetype="dashed",size=2)
 ```
 
 
