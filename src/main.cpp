@@ -90,7 +90,7 @@ List get_opts(int L,
   NumericVector b_gamma_vec = b_gamma.isNotNull() ? as<NumericVector>(b_gamma) : NumericVector(L, 0.0);
   NumericVector a_alpha_vec = a_alpha.isNotNull() ? as<NumericVector>(a_alpha) : NumericVector(L, 0.0);
   NumericVector b_alpha_vec = b_alpha.isNotNull() ? as<NumericVector>(b_alpha) : NumericVector(L, 0.0);
-  NumericVector a_beta_vec = a_beta.isNotNull() ? as<NumericVector>(a_beta) : NumericVector(L, 0.0);
+  NumericVector a_beta_vec = a_beta.isNotNull() ? as<NumericVector>(a_beta) : NumericVector(L, 1.0);
   NumericVector b_beta_vec = b_beta.isNotNull() ? as<NumericVector>(b_beta) : NumericVector(L, 0.01);
 
   double a_val = a.isNotNull() ? Rcpp::as<double>(a) : 0.1;
@@ -446,8 +446,9 @@ List mintMR_LD(const List &gammah, const List &Gammah,
       // ----------------------- //
       double ta_beta = a_beta[ell] + K / 2;
       double tb_beta = b_beta[ell] + accu(as<mat>(beta0[ell])%as<mat>(beta0[ell]))/2;
-      sgbeta2[ell] = tb_beta/ta_beta;
-
+      // sgbeta2[ell] = tb_beta/(ta_beta - 1);
+      sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
+      
       // ----------------------- //
       // Update omega
       // ----------------------- //
@@ -830,8 +831,9 @@ List mintMR_LD_Sample_Overlap(const List &gammah, const List &Gammah,
       // ----------------------- //
       double ta_beta = a_beta[ell] + K / 2;
       double tb_beta = b_beta[ell] + accu(as<mat>(beta0[ell])%as<mat>(beta0[ell]))/2;
-      sgbeta2[ell] = tb_beta/ta_beta;
-
+      // sgbeta2[ell] = tb_beta/ta_beta;
+      sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
+      
       // ----------------------- //
       // Update omega
       // ----------------------- //

@@ -58,7 +58,7 @@ opts <- get_opts(L, maxIter = 1000)
 
 MintMR can be run without specifying LD or sample overlap using following command.
 ```{r}
-set.seed(2024)
+set.seed(1)
 res_no_LD <- mintMR(gammah = example_data$gamma_hat,
                     Gammah = example_data$Gamma_hat,
                     se1 = example_data$se_g,
@@ -68,7 +68,7 @@ res_no_LD <- mintMR(gammah = example_data$gamma_hat,
 
 When the LD information is available and formatted as a list of matrices, it can be accounted for:
 ```{r}
-set.seed(2024)
+set.seed(1)
 res <- mintMR(gammah = example_data$gamma_hat,
               Gammah = example_data$Gamma_hat,
               se1 = example_data$se_g,
@@ -78,7 +78,7 @@ res <- mintMR(gammah = example_data$gamma_hat,
 ```
 When sample overlap information $\widehat{C}$ is available as a $(1+\sum_lK_l)\times(1+\sum_lK_l)$ matrix, it can be used in the function as
 ```{r}
-set.seed(2024)
+set.seed(1)
 # Example correlation matrix for sample overlap. In real data, it can be pre-estimated.
 C <- 0.9 * diag(1,(1+K1+K2)) + 
   0.1 * matrix(1,nrow=1+K1+K2,ncol=1+K1+K2)
