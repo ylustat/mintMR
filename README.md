@@ -34,7 +34,7 @@ If you encounter following messages installing this package on server that you d
   ERROR: 'configure' exists but is not executable -- see the 'R Installation and Administration Manual'
   ```
 
-  Please follows instructions on this [page](https://vsoch.github.io/2013/install-r-packages-that-require-compilation-on-linux-without-sudo/).
+  Please follow instructions on this [page](https://vsoch.github.io/2013/install-r-packages-that-require-compilation-on-linux-without-sudo/).
 
 
 
