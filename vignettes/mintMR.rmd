@@ -13,9 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ### Introduction
-This vignette provides an introduction to the `mintMR` package. R package `mintMR` implements the mintMR method for integrative multi-context Mendelian randomization.
+This vignette provides an introduction to the `mintMR` package. The R package `mintMR` implements the mintMR method for integrative multi-context Mendelian randomization analysis.
 
-Install the development version of `mintMR` by use of the `devtools` package. Note that `mintMR` depends on the `CCA`, `Rcpp`, and `RcppArmadillo` package.
+To install the development version of the `mintMR` package, please load the `devtools` package first. Note that `mintMR` requires the `CCA`, `Rcpp`, and `RcppArmadillo` packages. 
 
 To install this package, run the following command in R
 ```
@@ -27,44 +27,45 @@ Load the package using the following command:
 ```{r}
 library("mintMR")
 ```
-This vignette depends on R packages `MendelianRandomization`, `ggplot2` and `tidyverse`, you can load these two packages using the following command:
+This vignette depends on R packages `MendelianRandomization`, `ggplot2` and `tidyverse`, you can load these packages using the following command:
 ```{r}
 suppressMessages(library("tidyverse"))
 library("ggplot2")
 library("MendelianRandomization")
 ```
 
+
 ### Fit mintMR for correlated SNPs using simulated data
-In this section, we fit mintMR using simulated data (provided in the package) as an example to illustrate basic usage of mintMR. `gamma_hat` is the IV-to-Exposure effect and standard error, `Gammah_hat` is the IV-to-Outcome effect and standard error. `LD` is the estimated genetic correlations among IVs. `latent status` is the true underlying effect status, where `1` indicates true non-zero effect and `0` indicates true zero effect.
+In this section, we fit mintMR using simulated data (provided in the package) as an example to illustrate the basic usage of mintMR. `gamma_hat` and `se_g` are the estimated IV-to-exposure effect and its standard error, and `Gammah_hat` and `se_G` are the estimated IV-to-outcome effect and its standard error. `LD` is the estimated linkage disequilibrium matrix among IVs. `latent status` is the true underlying effect status, where `1` indicates the presence of non-zero effect and `0` indicates the absence of effect.
 ```{r}
 data(example_data)
 names(example_data)
 ```
-The example data include 50 simulated genes, each of them with 5 contexts.
+The example data includes 50 simulated genes, each with effects from 5 different contexts/tissues.
 ```{r}
 L <- length(example_data$gamma_hat)
 K1 <- K2 <- 5
 L
 ```
-The mintMR requires the information for which context is included for each exposure (the `group` variable). The `group` variable is a list, where each element is a vector of column indices for the `gamma_hat` and `se_g`.
+In the input IV-to-exposure statistics, each exposure have effects from multiple contexts/tissues. The `group` variable is used to represent the indices of contexts/tissues in the input statistics that belong to each exposure. The `group` variable is a list, and each element of it is a vector of column indices for the `gamma_hat` and `se_g`.
 ```{r}
 group <- list(exposure1 = 1:K1, exposure2 = 1:K2+K1)
 # column 1 to 5 in gamma_hat and se_g are from exposure 1
 # column 6 to 10 in gamma_hat and se_g are from exposure 2
 group
 ```
-In addition, mintMR takes IV-to-exposure effect (a list of $I_g\times \sum K_l$ matrices with length $L$), IV-to-outcome effect and corresponding standard errors. The LD matrices (`corr_mat`) and sample overlap (`Lambda`) are optional.
+In addition, mintMR takes IV-to-exposure effect (a list of $I_g\times \sum K_l$ matrices with length $L$) and standard errors, IV-to-outcome effect and standard errors. The LD matrices (`corr_mat`) and sample overlap (`Lambda`) are optional.
 
-Default prior parameters used in the algorithm is
+The default prior parameters used in the algorithm is
 ```{r}
 opts <- get_opts(L)
 names(opts)
 ```
-It can be changed by specifying the parameters you want to use. For example:
+It can be changed by specifying the parameters you would like to use. For example:
 ```{r}
 opts <- get_opts(L, maxIter = 1000)
 ```
-MintMR can be run without specifying LD or sample overlap using following command.
+MintMR can be run without specifying LD or sample overlap using the following command.
 ```{r, eval=FALSE}
 set.seed(1)
 res_no_LD <- mintMR(gammah = example_data$gamma_hat,
@@ -74,7 +75,7 @@ res_no_LD <- mintMR(gammah = example_data$gamma_hat,
                     group = group)
 ```
 
-When the LD information is available and formatted as a list of matrices, it can be accounted for:
+When LD information is available and is formatted as a list of matrices, it can be accounted for:
 ```{r}
 set.seed(1)
 res <- mintMR(gammah = example_data$gamma_hat,
@@ -103,7 +104,7 @@ res_LD_sample_overlap <- mintMR(gammah = example_data$gamma_hat,
 ```
 
 
-The output includes the effect estimates and p-values.
+The output includes the effect estimates and p-values for each exposure in each context/tissue.
 ```{r}
 names(res)
 ```
@@ -149,7 +150,7 @@ estimate %>%
   geom_hline(yintercept = 0,col="red",linetype="dashed",linewidth=2)
 ```
 
-In real data, the parameter `b_beta` is recommended to be estimated first using other MR methods. For example,
+In real data analysis, we recommend to first estimate the parameter `b_beta` for the prior distribution of causal effects using other MR methods. For example, we may fit MVMR-IVW and calculated the estimate as follows
 ```{r}
 ivw <- mapply(function(bx,by,bxse,byse,ld) {
   res <- mr_mvivw(mr_mvinput(bx = bx, by = as.numeric(by),
@@ -167,7 +168,7 @@ b_beta <- var(b_ivw[p_ivw > 0.05]) * (K1+K2) / 2
 opts <- get_opts(L, b_beta = rep(b_beta,L))
 ```
 
-The new parameter can be used in the mintMR by setting the `opts` option.
+The estimated parameter can be used in the mintMR by setting the `opts` option.
 ```{r, out.width="50%"}
 set.seed(1)
 res <- mintMR(gammah = example_data$gamma_hat,

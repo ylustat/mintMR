@@ -5,7 +5,7 @@
 Installation
 ============
 
-To install the development version of the `mintMR` package, please load the `devtools` package first. Please be aware that `mintMR` requires the `CCA`, `Rcpp`, and `RcppArmadillo` packages. Additionally, ensure that Rtools is properly configured for Windows and Xcode for Mac OS/X.
+To install the development version of the `mintMR` package, please load the `devtools` package first. Note that mintMR requires the `CCA`, `Rcpp`, and `RcppArmadillo` packages. Additionally, ensure Rtools on Windows and Xcode on Mac OS/X are properly configured.
 
 ```
 library(devtools)
@@ -14,7 +14,7 @@ install_github("ylustat/mintMR")
 
 ### Additional notes
 
-If you encounter following messages installing this package on server that you do not have admin access to, please see the following solutions:
+If you encounter the following messages when installing this package on a server without admin access, please see the solutions below:
 
 - If the error message shows 
 
