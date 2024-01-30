@@ -1,6 +1,6 @@
 ---
 title: An integrative multi-context Mendelian randomization method for identifying risk genes across human tissues
-author: "Yihao Lu, Ke Xu, Fan Yang and Lin S. Chen"
+author: "Yihao Lu, Ke Xu, Bowei Kang, Brandon L. Pierce, Fan Yang and Lin S. Chen"
 output:
   pdf_document: default
   latex_engine: xelatex
@@ -27,22 +27,31 @@ Load the package using the following command:
 ```{r}
 library("mintMR")
 ```
-This vignette depends on R packages `ggplot2` and `tidyverse`, you can load these two packages using the following command:
+This vignette depends on R packages `MendelianRandomization`, `ggplot2` and `tidyverse`, you can load these two packages using the following command:
 ```{r}
-suppressMessages(library("tidyverse"));
-library("ggplot2");
+suppressMessages(library("tidyverse"))
+library("ggplot2")
+library("MendelianRandomization")
 ```
 
 ### Fit mintMR for correlated SNPs using simulated data
-In this section, we fit mintMR using simulated data (provided in the package).
+In this section, we fit mintMR using simulated data (provided in the package) as an example to illustrate basic usage of mintMR. `gamma_hat` is the IV-to-Exposure effect and standard error, `Gammah_hat` is the IV-to-Outcome effect and standard error. `LD` is the estimated genetic correlations among IVs. `latent status` is the true underlying effect status, where `1` indicates true non-zero effect and `0` indicates true zero effect.
 ```{r}
 data(example_data)
-L <- 50
-K1 <- K2 <- 5
+names(example_data)
 ```
-The simulated data has 2 exposures, each with five contexts. It has 50 gene-CpG pairs. True effect status is a binary matrix where 0 indicates no effect and 1 indicates true non-zero effect. The mintMR requires the information for what contexts included for each exposure (the 'group' variable). 
+The example data include 50 simulated genes, each of them with 5 contexts.
+```{r}
+L <- length(example_data$gamma_hat)
+K1 <- K2 <- 5
+L
+```
+The mintMR requires the information for which context is included for each exposure (the `group` variable). The `group` variable is a list, where each element is a vector of column indices for the `gamma_hat` and `se_g`.
 ```{r}
 group <- list(exposure1 = 1:K1, exposure2 = 1:K2+K1)
+# column 1 to 5 in gamma_hat and se_g are from exposure 1
+# column 6 to 10 in gamma_hat and se_g are from exposure 2
+group
 ```
 In addition, mintMR takes IV-to-exposure effect (a list of $I_g\times \sum K_l$ matrices with length $L$), IV-to-outcome effect and corresponding standard errors. The LD matrices (`corr_mat`) and sample overlap (`Lambda`) are optional.
 
@@ -55,10 +64,9 @@ It can be changed by specifying the parameters you want to use. For example:
 ```{r}
 opts <- get_opts(L, maxIter = 1000)
 ```
-
 MintMR can be run without specifying LD or sample overlap using following command.
-```{r}
-set.seed(123)
+```{r, eval=FALSE}
+set.seed(1)
 res_no_LD <- mintMR(gammah = example_data$gamma_hat,
                     Gammah = example_data$Gamma_hat,
                     se1 = example_data$se_g,
@@ -68,7 +76,7 @@ res_no_LD <- mintMR(gammah = example_data$gamma_hat,
 
 When the LD information is available and formatted as a list of matrices, it can be accounted for:
 ```{r}
-set.seed(123)
+set.seed(1)
 res <- mintMR(gammah = example_data$gamma_hat,
               Gammah = example_data$Gamma_hat,
               se1 = example_data$se_g,
@@ -77,8 +85,8 @@ res <- mintMR(gammah = example_data$gamma_hat,
               group = group)
 ```
 When sample overlap information $\widehat{C}$ is available as a $(1+\sum_lK_l)\times(1+\sum_lK_l)$ matrix, it can be used in the function as
-```{r}
-set.seed(123)
+```{r, eval=FALSE}
+set.seed(1)
 # Example correlation matrix for sample overlap. In real data, it can be pre-estimated.
 C <- 0.9 * diag(1,(1+K1+K2)) + 
   0.1 * matrix(1,nrow=1+K1+K2,ncol=1+K1+K2)
@@ -101,7 +109,7 @@ names(res)
 ```
 
 The p-value distribution for all gene-tissue pairs analyzed can be visualized as below.
-```{r}
+```{r, out.width="50%"}
 p <- data.frame(mintMR = as.vector(res$Pvalue))
 p %>% 
   arrange(mintMR) %>% 
@@ -109,13 +117,14 @@ p %>%
   mutate(value = -log10(mintMR), unif = -log10(unif)) %>%
   ggplot(aes(y = value, x = unif))+
   geom_abline(intercept = 0, slope = 1, alpha = 0.5)+
-  geom_point(size = 2, col = "red", alpha=1)+
+  geom_point(size = 3, col = "red", alpha=1)+
   theme_classic()+
   labs(y = expression(paste("Observed -log"[10], plain(P))),
        x = expression(paste("Expected -log"[10], plain(P))))
 ```
+
 The p-value distribution for truly non-zero effects:
-```{r}
+```{r, out.width="50%"}
 p <- data.frame(mintMR = res$Pvalue[example_data$latent_status == 1])
 p %>% 
   ggplot(aes(x = mintMR))+
@@ -126,8 +135,8 @@ p %>%
        title = "P-value for truly non-zero effect")
 ```
 
-The effect estimate for null effects:
-```{r}
+The effect estimates for truly zero effects:
+```{r, out.width="50%"}
 estimate <- res$Estimate
 estimate[example_data$latent_status == 1] <- NA
 
@@ -136,8 +145,49 @@ estimate %>%
   tidyr::drop_na() %>%
   ggplot(aes(y = value))+
   theme_bw()+
-  geom_boxplot(width=0.2)+
-  geom_hline(yintercept = 0,col="red",linetype="dashed",size=2)
+  geom_boxplot()+
+  geom_hline(yintercept = 0,col="red",linetype="dashed",linewidth=2)
 ```
 
+In real data, the parameter `b_beta` is recommended to be estimated first using other MR methods. For example,
+```{r}
+ivw <- mapply(function(bx,by,bxse,byse,ld) {
+  res <- mr_mvivw(mr_mvinput(bx = bx, by = as.numeric(by),
+                             bxse = bxse, byse = as.numeric(byse),
+                             correlation = ld))
+  return(list(p = res$Pvalue, b = res$Estimate))
+},example_data$gamma_hat,example_data$Gamma_hat,
+example_data$se_g,example_data$se_G,
+example_data$LD,SIMPLIFY = F)
+
+b_ivw <- lapply(ivw, function(x) x$b) %>% do.call(rbind,.)
+p_ivw <- lapply(ivw, function(x) x$p) %>% do.call(rbind,.)
+
+b_beta <- var(b_ivw[p_ivw > 0.05]) * (K1+K2) / 2
+opts <- get_opts(L, b_beta = rep(b_beta,L))
+```
+
+The new parameter can be used in the mintMR by setting the `opts` option.
+```{r, out.width="50%"}
+set.seed(1)
+res <- mintMR(gammah = example_data$gamma_hat,
+              Gammah = example_data$Gamma_hat,
+              se1 = example_data$se_g,
+              se2 = example_data$se_G,
+              corr_mat = example_data$LD,
+              group = group,
+              opts = opts)
+
+p <- data.frame(mintMR = as.vector(res$Pvalue))
+p %>%
+  arrange(mintMR) %>%
+  mutate(unif = ppoints(n())) %>%
+  mutate(value = -log10(mintMR), unif = -log10(unif)) %>%
+  ggplot(aes(y = value, x = unif))+
+  geom_abline(intercept = 0, slope = 1, alpha = 0.5)+
+  geom_point(size = 3, col = "red", alpha=1)+
+  theme_classic()+
+  labs(y = expression(paste("Observed -log"[10], plain(P))),
+       x = expression(paste("Expected -log"[10], plain(P))))
+```
 

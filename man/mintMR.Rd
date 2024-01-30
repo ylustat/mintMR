@@ -30,9 +30,8 @@ mintMR(gammah, Gammah, se1, se2, group, opts = NULL, corr_mat = NULL, Lambda = N
 }
 \examples{
 data(example_data)
-L <- 50
 K1 <- K2 <- 5
-group <- list(exposure1 = 1:K1, exposure2 = 1:K2+K1)
+group <- list(exposure1 = 1:5, exposure2 = 6:10)
 set.seed(123)
 res <- mintMR(gammah = example_data$gamma_hat,
               Gammah = example_data$Gamma_hat,
