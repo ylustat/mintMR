@@ -45,7 +45,7 @@ Please refer to the ['mintMR' vignette](https://github.com/ylustat/mintMR/blob/m
 
 # References
 
-Yihao Lu, Ke Xu, Bowei Kang, Brandon L. Pierce, Fan Yang and Lin S. Chen. An integrative multi-context Mendelian randomization method for identifying risk genes across human tissues. Work in progress
+Yihao Lu, Ke Xu, Bowei Kang, Brandon L. Pierce, Fan Yang and Lin S. Chen. An integrative multi-context Mendelian randomization method for identifying risk genes across human tissues. Work in progress.
 
 Development
 ===========
