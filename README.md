@@ -50,4 +50,4 @@ Yihao Lu, Ke Xu, Bowei Kang, Brandon L. Pierce, Fan Yang and Lin S. Chen. An int
 Development
 ===========
 
-This package is maintained by Yihao Lu (yihaolu@uchicago.edu).
+This package is maintained by Yihao Lu (yihaolu.uchicago@gmail.com).
